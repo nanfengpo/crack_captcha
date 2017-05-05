@@ -132,7 +132,7 @@ def train():
             i += 1
             batch_x, batch_y = gen_next_batch(64)
             _, _loss = sess.run([train_step, loss],
-                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.3})
+                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.5})
 
             # 每20次输出loss
             # tf.train.global_step(sess,global_step_tensor)等于i
