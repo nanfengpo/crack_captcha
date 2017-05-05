@@ -97,12 +97,12 @@ def create_layer(x_input, keep_prob):
 
     return y_output
 
-
+# 计算loss的典型方法
 def create_loss(layer, y_input):
     loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y_input, logits=layer))
     return loss
 
-
+# 计算accuracy的典型方法
 def create_accuracy(output, y_input):
     predict = tf.reshape(output, [-1, MAX_CAPTCHA, CHAR_SET_LEN])
     max_idx_p = tf.argmax(predict, 2)
@@ -147,7 +147,7 @@ def train():
                 saver.save(sess,"break.model",global_step=i)
                 # 如果准确率大于50%,完成训练
                 if acc > MAX_ACCURACY:
-                    print('current acc > %s  ,stop now' % MAX_ACCURACY)
+                    print('current accuracy > %s  ,stop now' % MAX_ACCURACY)
                     break
 
 
