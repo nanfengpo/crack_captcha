@@ -132,7 +132,7 @@ def train():
             i += 1
             batch_x, batch_y = gen_next_batch(64)
             _, _loss = sess.run([train_step, loss],
-                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.75})
+                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.3})
 
             # 每20次输出loss
             # tf.train.global_step(sess,global_step_tensor)等于i
@@ -142,7 +142,7 @@ def train():
             # 每100 step计算一次准确率并保存模型
             if i % 100 == 0:
                 batch_x_test, batch_y_test = gen_next_batch(100)
-                acc = sess.run(accuracy, feed_dict={x_input: batch_x_test, y_input: batch_y_test, keep_prob: 1.})
+                acc = sess.run(accuracy, feed_dict={x_input: batch_x_test, y_input: batch_y_test, keep_prob: 1.0})
                 print('step is %s' % i, 'and accy is %s' % acc)
                 # 保存模型
                 saver.save(sess,"model/break.ckpt",global_step=i)
