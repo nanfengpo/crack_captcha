@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 import tensorflow as tf
 import numpy as np
 from src.gen_image import text_to_array
@@ -135,8 +135,9 @@ def train():
                                 feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.75})
 
             # 每20次输出loss
+            # tf.train.global_step(sess,global_step_tensor)等于i
             if i % 20 == 0:
-                print(tf.train.global_step(sess,global_step_tensor), i, _loss)
+                print(tf.train.global_step(sess,global_step_tensor), _loss)
 
             # 每100 step计算一次准确率并保存模型
             if i % 100 == 0:
@@ -144,7 +145,7 @@ def train():
                 acc = sess.run(accuracy, feed_dict={x_input: batch_x_test, y_input: batch_y_test, keep_prob: 1.})
                 print('step is %s' % i, 'and accy is %s' % acc)
                 # 保存模型
-                saver.save(sess,"break.model",global_step=i)
+                saver.save(sess,"model/break.ckpt",global_step=i)
                 # 如果准确率大于50%,完成训练
                 if acc > MAX_ACCURACY:
                     print('current accuracy > %s  ,stop now' % MAX_ACCURACY)

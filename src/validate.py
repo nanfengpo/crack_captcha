@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 from src.gen_model import create_layer
 import tensorflow as tf
 import src.config as config
