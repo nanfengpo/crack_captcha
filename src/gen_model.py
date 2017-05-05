@@ -62,24 +62,24 @@ def create_layer(x_input, keep_prob):
     w_c1 = __weight_variable([5, 5, 1, 32], stddev=0.1)  # 3x3 第一层32个卷积核 采用黑白色
     b_c1 = __bias_variable([32], stddev=0.1)
     h_c1 = tf.nn.relu(tf.nn.bias_add(__conv2d(x_image, w_c1), b_c1))  # 定义第一个卷积层
+    # h_pool1=tf.nn.dropout(h_c1,keep_prob)
     h_pool1 = __max_pool_2x2(h_c1)  # 定义第一个池化层
-    # h_pool1 = tf.nn.dropout(h_pool1, keep_prob)
 
     # 定义第2个卷积层
     w_c2 = __weight_variable([5, 5, 32, 64], stddev=0.1)
     b_c2 = __bias_variable([64], stddev=0.1)
     h_c2 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool1, w_c2), b_c2))
+    # h_pool2=tf.nn.dropout(h_c2,keep_prob)
     h_pool2 = __max_pool_2x2(h_c2)
-    # h_pool2 = tf.nn.dropout(h_pool2, keep_prob)
 
     # 定义第3个卷积层
     w_c3 = __weight_variable([5, 5, 64, 64], stddev=0.1)
     b_c3 = __bias_variable([64], stddev=0.1)
     h_c3 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool2, w_c3), b_c3))
+    # h_pool3=tf.nn.dropout(h_c3,keep_prob)
     h_pool3 = __max_pool_2x2(h_c3)
-    # h_pool3 = tf.nn.dropout(h_pool3, keep_prob)
 
-    # 3层池化之后 width 144 / 8 = 18
+    # 3层池化之后 width 160 / 8 = 20
     # height 64 / 8 = 8
 
     # 全链接层1
