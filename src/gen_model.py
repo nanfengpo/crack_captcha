@@ -61,43 +61,44 @@ def create_layer(x_input, keep_prob):
     x_image = tf.reshape(x_input, shape=[-1, IMAGE_WIDTH, IMAGE_HEIGHT, 1])
 
     # 定义第1个卷积层
-    w_c1 = __weight_variable([5, 5, 1, 32], stddev=0.1)  # 3x3 第一层32个卷积核 采用黑白色
+    w_c1 = __weight_variable([11, 11, 1, 32], stddev=0.1)  # 11x11 第一层32个卷积核 采用黑白色
     b_c1 = __bias_variable([32], stddev=0.1)
     h_c1 = tf.nn.relu(tf.nn.bias_add(__conv2d(x_image, w_c1), b_c1))  # 定义第一个卷积层
-    # h_pool1=tf.nn.dropout(h_c1,keep_prob)
+    # h_c1=tf.nn.dropout(h_c1,keep_prob)
     h_pool1 = __max_pool_2x2(h_c1)  # 定义第一个池化层
 
     # 定义第2个卷积层
-    w_c2 = __weight_variable([5, 5, 32, 64], stddev=0.1)
+    w_c2 = __weight_variable([7, 7, 32, 64], stddev=0.1)
     b_c2 = __bias_variable([64], stddev=0.1)
     h_c2 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool1, w_c2), b_c2))
-    # h_pool2=tf.nn.dropout(h_c2,keep_prob)
+    # h_c2=tf.nn.dropout(h_c2,keep_prob)
     h_pool2 = __max_pool_2x2(h_c2)
 
     # 定义第3个卷积层
     w_c3 = __weight_variable([5, 5, 64, 64], stddev=0.1)
     b_c3 = __bias_variable([64], stddev=0.1)
     h_c3 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool2, w_c3), b_c3))
-    # h_pool3=tf.nn.dropout(h_c3,keep_prob)
+    # h_c3=tf.nn.dropout(h_c3,keep_prob)
     h_pool3 = __max_pool_2x2(h_c3)
 
     # 3层池化之后 width 160 / 8 = 20
     # height 64 / 8 = 8
-
+    '''
     # 定义第4个卷积层
-    w_c4 = __weight_variable([5, 5, 64, 64], stddev=0.1)
+    w_c4 = __weight_variable([3, 3, 64, 64], stddev=0.1)
     b_c4 = __bias_variable([64], stddev=0.1)
     h_c4 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool3, w_c4), b_c4))
-    # h_pool3=tf.nn.dropout(h_c3,keep_prob)
+    # h_c4=tf.nn.dropout(h_c4,keep_prob)
     h_pool4 = __max_pool_2x2(h_c4)
 
     # 4层池化之后 width 160 / 16 = 10
     # height 64 / 16 = 4
+    '''
 
     # 全链接层1
-    w_fc1 = __weight_variable([10 * 4 * 64, 2048], stddev=0.1)
+    w_fc1 = __weight_variable([20 * 8 * 64, 2048], stddev=0.1)
     b_fc1 = __bias_variable([2048])
-    h_pool3_flat = tf.reshape(h_pool4, [-1, w_fc1.get_shape().as_list()[0]])
+    h_pool3_flat = tf.reshape(h_pool3, [-1, w_fc1.get_shape().as_list()[0]])
     h_fc1 = tf.nn.relu(tf.add(tf.matmul(h_pool3_flat, w_fc1), b_fc1))
     # drop out 内容0
     h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob)
@@ -143,9 +144,9 @@ def train():
 
         while acc < MAX_ACCURACY:
             i += 1
-            batch_x, batch_y = gen_next_batch(100)
+            batch_x, batch_y = gen_next_batch(128)
             _, _loss = sess.run([train_step, loss],
-                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.3})
+                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.5})
 
             # 每20次输出loss
             # tf.train.global_step(sess,global_step_tensor)等于i
@@ -156,7 +157,7 @@ def train():
             if i % 100 == 0:
                 batch_x_test, batch_y_test = gen_next_batch(100)
                 acc = sess.run(accuracy, feed_dict={x_input: batch_x_test, y_input: batch_y_test, keep_prob: 1.0})
-                print('step is %s' % i, 'and accy is %s' % acc)
+                print('step is %s' % i, 'and accuracy is %s' % acc)
                 # 保存模型
                 saver.save(sess,"model/break.ckpt",global_step=i)
                 # 如果准确率大于50%,完成训练
