@@ -22,3 +22,7 @@ python==python3.5.2
 
 ## 破解验证码
 运行crack.py文件，破解上一步生成的验证码
+
+# 注意
+1、最后的输出层一定要是MAX_CAPTCHA×CHAR_SET_LEN个神经元！！！不能简化为MAX_CAPTCHA个！也就是说必须要用到one-hot！！！
+2、优化器的话AdamOptimizer就非常好！

@@ -6,7 +6,7 @@ from src.config import MAX_CAPTCHA, CHAR_SET_LEN, IMAGE_HEIGHT, IMAGE_WIDTH, MAX
 from src.gen_image import gen_require_captcha_image
 
 x_input = tf.placeholder(tf.float32, [None, IMAGE_HEIGHT * IMAGE_WIDTH])
-y_input = tf.placeholder(tf.float32, [None, CHAR_SET_LEN * MAX_CAPTCHA])
+y_input = tf.placeholder(tf.float32, [None, MAX_CAPTCHA * CHAR_SET_LEN])
 keep_prob = tf.placeholder(tf.float32)
 
 
@@ -52,6 +52,8 @@ def gen_next_batch(batch_size=100):
         batch_x[i, :] = image.flatten() / 255
         batch_y[i, :] = text_to_array(text)
 
+    # batch_y=batch_y.reshape(batch_size,MAX_CAPTCHA,CHAR_SET_LEN)
+
     return batch_x, batch_y
 
 
@@ -82,31 +84,42 @@ def create_layer(x_input, keep_prob):
     # 3层池化之后 width 160 / 8 = 20
     # height 64 / 8 = 8
 
+    # 定义第4个卷积层
+    w_c4 = __weight_variable([5, 5, 64, 64], stddev=0.1)
+    b_c4 = __bias_variable([64], stddev=0.1)
+    h_c4 = tf.nn.relu(tf.nn.bias_add(__conv2d(h_pool3, w_c4), b_c4))
+    # h_pool3=tf.nn.dropout(h_c3,keep_prob)
+    h_pool4 = __max_pool_2x2(h_c4)
+
+    # 4层池化之后 width 160 / 16 = 10
+    # height 64 / 16 = 4
+
     # 全链接层1
-    w_fc1 = __weight_variable([20 * 8 * 64, 1024], stddev=0.1)
-    b_fc1 = __bias_variable([1024])
-    h_pool3_flat = tf.reshape(h_pool3, [-1, w_fc1.get_shape().as_list()[0]])
+    w_fc1 = __weight_variable([10 * 4 * 64, 2048], stddev=0.1)
+    b_fc1 = __bias_variable([2048])
+    h_pool3_flat = tf.reshape(h_pool4, [-1, w_fc1.get_shape().as_list()[0]])
     h_fc1 = tf.nn.relu(tf.add(tf.matmul(h_pool3_flat, w_fc1), b_fc1))
     # drop out 内容0
     h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob)
 
     # 全链接层2
-    w_output = __weight_variable([1024, MAX_CAPTCHA * CHAR_SET_LEN], stddev=0.1)
+    w_output = __weight_variable([2048, MAX_CAPTCHA * CHAR_SET_LEN], stddev=0.1)
     b_output = __bias_variable([MAX_CAPTCHA * CHAR_SET_LEN])
     y_output = tf.add(tf.matmul(h_fc1_dropout, w_output), b_output)
 
     return y_output
 
 # 计算loss的典型方法
-def create_loss(layer, y_input):
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y_input, logits=layer))
+def create_loss(y_output, y_input):
+    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y_input, logits=y_output))
     return loss
 
 # 计算accuracy的典型方法
-def create_accuracy(output, y_input):
-    predict = tf.reshape(output, [-1, MAX_CAPTCHA, CHAR_SET_LEN])
-    max_idx_p = tf.argmax(predict, 2)
-    max_idx_l = tf.argmax(tf.reshape(y_input, [-1, MAX_CAPTCHA, CHAR_SET_LEN]), 2)
+def create_accuracy(y_output, y_input):
+    y_input=tf.reshape(y_input,[-1,MAX_CAPTCHA,CHAR_SET_LEN])
+    y_output=tf.reshape(y_output,[-1,MAX_CAPTCHA,CHAR_SET_LEN])
+    max_idx_p = tf.argmax(y_output, 2)
+    max_idx_l = tf.argmax(y_input, 2)
     correct_pred = tf.equal(max_idx_p, max_idx_l)
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
     return accuracy
@@ -130,9 +143,9 @@ def train():
 
         while acc < MAX_ACCURACY:
             i += 1
-            batch_x, batch_y = gen_next_batch(64)
+            batch_x, batch_y = gen_next_batch(100)
             _, _loss = sess.run([train_step, loss],
-                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.5})
+                                feed_dict={x_input: batch_x, y_input: batch_y, keep_prob: 0.3})
 
             # 每20次输出loss
             # tf.train.global_step(sess,global_step_tensor)等于i
